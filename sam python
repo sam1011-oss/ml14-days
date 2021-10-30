@@ -1,0 +1,80 @@
+
+[作業目標]
+[簡答題] 比較下列兩個讀入的 df 有什麼不同？為什麼造成的？
+
+請將 Dcard API 取得所有的看板資訊轉換成 DataFrame，並且依照熱門程度排序後存成一個 csv 的檔案。
+
+作業¶
+In [1]:
+# 記得先 Import 正確的套件
+
+import pandas as pd
+import numpy as np
+1. [簡答題] 比較下列兩個讀入的 df 有什麼不同？為什麼造成的？
+In [2]:
+df1 = pd.read_csv('https://raw.githubusercontent.com/dataoptimal/posts/master/data%20cleaning%20with%20python%20and%20pandas/property%20data.csv')
+df1
+Out[2]:
+PID	ST_NUM	ST_NAME	OWN_OCCUPIED	NUM_BEDROOMS	NUM_BATH	SQ_FT
+0	100001000.0	104.0	PUTNAM	Y	3	1	1000
+1	100002000.0	197.0	LEXINGTON	N	3	1.5	--
+2	100003000.0	NaN	LEXINGTON	N	NaN	1	850
+3	100004000.0	201.0	BERKELEY	12	1	NaN	700
+4	NaN	203.0	BERKELEY	Y	3	2	1600
+5	100006000.0	207.0	BERKELEY	Y	NaN	1	800
+6	100007000.0	NaN	WASHINGTON	NaN	2	HURLEY	950
+7	100008000.0	213.0	TREMONT	Y	1	1	NaN
+8	100009000.0	215.0	TREMONT	Y	na	2	1800
+In [3]:
+df2 = pd.read_csv(
+    'https://raw.githubusercontent.com/dataoptimal/posts/master/data%20cleaning%20with%20python%20and%20pandas/property%20data.csv',
+    keep_default_na=True,
+    na_values=['na', '--']
+)
+df2
+Out[3]:
+PID	ST_NUM	ST_NAME	OWN_OCCUPIED	NUM_BEDROOMS	NUM_BATH	SQ_FT
+0	100001000.0	104.0	PUTNAM	Y	3.0	1	1000.0
+1	100002000.0	197.0	LEXINGTON	N	3.0	1.5	NaN
+2	100003000.0	NaN	LEXINGTON	N	NaN	1	850.0
+3	100004000.0	201.0	BERKELEY	12	1.0	NaN	700.0
+4	NaN	203.0	BERKELEY	Y	3.0	2	1600.0
+5	100006000.0	207.0	BERKELEY	Y	NaN	1	800.0
+6	100007000.0	NaN	WASHINGTON	NaN	2.0	HURLEY	950.0
+7	100008000.0	213.0	TREMONT	Y	1.0	1	NaN
+8	100009000.0	215.0	TREMONT	Y	NaN	2	1800.0
+會對預設的 NaN 值做判斷，但 na、-- 不在預設的範圍內所以沒有被轉換。
+2. 請將 Dcard API 取得所有的看板資訊轉換成 DataFrame，並且依照熱門程度排序後存成一個 csv 的檔案。
+In [4]:
+import requests
+r = requests.get('https://www.dcard.tw/_api/forums')
+response = r.text
+
+import json
+data = json.loads(response)
+
+# print(data)
+In [5]:
+df = pd.DataFrame(data)
+df = df.sort_values(by = 'subscriptionCount', ascending = False)
+df.to_csv('Dcard.csv')
+In [6]:
+pd.read_csv('Dcard.csv')
+Out[6]:
+Unnamed: 0	id	alias	name	description	subscriptionCount	subscribed	read	createdAt	updatedAt	...	nsfw	mediaThreshold	limitCountries	limitStage	availableLayouts	postCount	favorite	enablePrivateMessage	heroImage	logo
+0	373	1ce3ebca-8701-42d5-b14c-076fc629bc8e	sex	西斯	西斯板（Sex）提供男女私密話題分享或性教育等情慾議題討論，若有性方面相關問題也可在此發問。...	628779	False	False	2020-02-04T07:52:53.573Z	2021-06-24T04:50:12.522Z	...	True	{'RACY': 1, 'ADULT': 1, 'VIOLENCE': 1}	[]	0	['classic']	{'last30Days': 5409}	False	False	{'url': 'https://megapx-assets.dcard.tw/images...	{'url': 'https://megapx-assets.dcard.tw/images...
+1	228	42851318-b9e2-4a75-8a05-9fe180becefe	relationship	感情	無論是遠距離戀愛、情侶間的有趣互動、分手後的藕斷絲連等...都可以在感情板分享你們的愛情故事...	572172	False	False	2020-02-04T07:28:43.573Z	2021-04-20T08:36:40.391Z	...	False	{}	[]	0	['classic']	{'last30Days': 10697}	False	False	{'url': 'https://megapx-assets.dcard.tw/images...	{'url': 'https://megapx-assets.dcard.tw/images...
+2	224	be1a095b-175e-4523-9e06-66a05d939676	dressup	穿搭	穿搭板提供各種服裝搭配、包鞋、飾品配件等相關話題討論。\n歡迎分享自己的日常穿搭，或任何潮流...	562942	False	False	2020-02-04T07:28:03.573Z	2021-08-14T10:19:26.675Z	...	False	{}	[]	0	['classic', 'link']	{'last30Days': 1627}	False	True	{'url': 'https://megapx-assets.dcard.tw/images...	{'url': 'https://megapx-assets.dcard.tw/images...
+3	217	cbd5285f-3cba-4bfc-86d0-1ab52d201459	makeup	美妝	不管你喜歡開架彩妝還是專櫃彩妝，美妝板提供各種最新彩妝開箱評比、粉底色號、唇膏試色、眼影試色...	471887	False	False	2020-02-04T07:26:53.573Z	2021-06-25T07:07:20.485Z	...	False	{}	[]	0	['classic']	{'last30Days': 3378}	False	False	{'url': 'https://megapx-assets.dcard.tw/images...	{'url': 'https://megapx-assets.dcard.tw/images...
+4	233	06e07db4-c8b5-4dae-851f-e8a8236e770c	meme	梗圖	梗圖=有梗的圖	453768	False	False	2020-02-04T07:29:33.573Z	2020-08-31T09:47:51.769Z	...	False	{}	[]	0	['image']	{'last30Days': 2381}	False	False	{'url': 'https://megapx-assets.dcard.tw/images...	{'url': 'https://megapx-assets.dcard.tw/images...
+...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...	...
+520	209	36443e19-9334-42f4-b91e-95e601150f61	hkacg	港澳 ACG	呢度係比香港澳門既同學仔討論同分享各種動漫、遊戲嘅討論區，發文留言前請先閱讀板規	1	False	False	2020-01-02T03:23:17.450Z	2021-07-23T11:09:33.256Z	...	False	{}	['HK', 'MO']	0	['classic', 'image', 'video', 'link']	{'last30Days': 27}	False	True	{'url': 'https://megapx-assets.dcard.tw/images...	{'url': 'https://megapx-assets.dcard.tw/images...
+521	172	9e2ea80f-3342-4533-bb7a-d639e6c517e7	athlete	選手	NaN	0	False	False	2017-08-22T05:22:03.772Z	2020-08-13T06:02:20.625Z	...	False	{}	[]	0	['classic', 'link']	{'last30Days': 1}	False	False	NaN	NaN
+522	207	019f0994-375e-479a-9b08-1b8addb64cc3	hkbeauty	港澳 Beauty	呢度係比香港澳門嘅同學仔討論化妝、護膚、美髮、任何扮靚相關話題嘅討論區，發文留言前請先閱讀板規	0	False	False	2020-01-02T03:21:28.406Z	2021-07-23T11:09:49.210Z	...	False	{}	['HK', 'MO']	0	['classic', 'image', 'video', 'link']	{'last30Days': 46}	False	False	{'url': 'https://megapx-assets.dcard.tw/images...	{'url': 'https://megapx-assets.dcard.tw/images...
+523	521	a932e2a7-be88-4c56-9ae9-ef4eb009666f	advancedPermission02	正在測試中的進階權限測試看板02	做為日本最具代表性的藝術風格，浮世繪之美始終讓人深深著迷，不管是19世紀印象派大師，抑或是當...	0	False	False	2021-08-18T08:43:00.111Z	2021-08-20T06:11:35.367Z	...	False	{}	[]	0	['classic', 'image', 'video', 'link']	{'last30Days': 1}	False	False	NaN	NaN
+524	208	1150ae79-6e67-46f2-bfec-74f8c365a4a1	hktrending	港澳時事	呢度係比香港澳門嘅同學仔討論同港澳有關既時事議題嘅討論區，發文留言前請先閱讀板規	0	False	False	2020-01-02T03:22:36.962Z	2021-07-23T11:07:17.530Z	...	False	{}	['HK', 'MO']	0	['classic', 'image', 'video', 'link']	{'last30Days': 81}	False	False	{'url': 'https://megapx-assets.dcard.tw/images...	{'url': 'https://megapx-assets.dcard.tw/images...
+525 rows × 35 columns
+
+In [ ]:
+
+In [ ]:
